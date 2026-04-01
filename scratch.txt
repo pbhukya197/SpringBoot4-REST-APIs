@@ -1,0 +1,94 @@
+Learn how to build professional Spring Boot REST applications using authentication and databases.
+=============================================================================================================
+
+You will learn how to develop
+      • Create REST APIs / Web Services with Spring
+      • Discuss REST concepts, JSON and HTTP messaging
+      • Install REST client tool: Swagger
+      • Develop REST APIs / Web Services with @RestController
+      • Build a CRUD interface to the database with Spring REST
+=============================================================================================================
+What is JSON?
+=============================================================================================================
+      • JavaScript Object Notation
+      • Lightweight data format for storing and exchanging data … plain text
+      • Language independent … not just for JavaScript
+      • Can use with any programming language: Java, C#, Python etc
+      • JSON is just plain text data
+      • Curley braces define objects in JSON
+      • Object members are name / value pairs
+      • Delimited by colons
+      • Name is always in double-quotes
+   JSON VALUES
+      • Numbers: no quotes
+      • String: in double quotes
+      • Boolean: true, false
+      • Nested JSON object
+      • Array
+      • null
+      {
+       "id": 14,
+       "firstName": "Praveen",
+       "lastName": "Bhukya",
+       "active": true,
+       "courses" : null
+      }
+=============================================================================================================
+REST HTTP Basics
+=============================================================================================================
+REST over HTTP
+    Most common use of REST is over HTTP
+    Leverage HTTP methods for CRUD operations
+
+    HTTP Method                     CRUD Operation
+    POST                            Create a new entity
+    GET                             Read a list of entities or single entity
+    PUT                             Update an existing entity
+    DELETE                          Delete an existing entity
+
+HTTP Messages
+
+    (Client) My CRM App -------------HTTP Request Message-------------------> CRM REST Service (Server)
+    (Client) My CRM App <------------HTTP Response Message------------------- CRM REST Service (Server)
+
+HTTP Request Message
+    • Request line: the HTTP command
+    • Header variables: request metadata
+    • Message body: contents of message
+HTTP Response Message
+    • Response line: server protocol and status code
+    • Header variables: response metadata
+    • Message body: contents of message
+HTTP Response - Status Codes
+    Code        Range Description
+    100 -       199 Informational
+    200 -       299 Successful
+    300 -       399 Redirection
+    400 -       499 Client error  (401 Authentication Required,   File Not Found)
+    500 -       599 Server error  (500 Internal Server Error)
+MIME Content Types
+    • The message format is described by MIME content type
+    • Multipurpose Internet Mail-Extension
+    • Basic Syntax: type/sub-type
+    • Examples
+    • text/html, text/plain
+    • application/json, application/xml,
+=============================================================================================================
+Java JSON Data Binding
+=============================================================================================================
+    Data binding is the process of converting JSON data to JAVA POJO (Plain old java object)
+    Spring uses the Jackson Project behind the scenes
+    Jackson handles the data binding between JSON and JAVA POJO
+    Details on Jackson Project : https://github.com/FasterXML/jackson-databind
+    By default, Jackson will call appropriate getter/setter method
+    JSON to Java Object -> covert JSON to java POJO ...call setter methods on POJO
+    NOTE: Jackson calls the setXXX methods it does not access internal private fields directly
+    Java POJO to JSON -> covert Java POJO to JSON ...call getter methods on POJO
+
+Spring and Jackson Support
+    When building Spring REST applications
+    Spring will automatically handles the Jackson Integration
+    JSON data being passed to REST controller is converted into POJO
+    Java Object being returned from REST controller is converted into JSON
+    These all happens behind the scenes automatically
+
