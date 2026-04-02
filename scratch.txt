@@ -91,4 +91,94 @@ Spring and Jackson Support
     JSON data being passed to REST controller is converted into POJO
     Java Object being returned from REST controller is converted into JSON
     These all happens behind the scenes automatically
+=============================================================================================================
+Book Request DTO
+=============================================================================================================
+What are Request Objects ?
+  A Request Object (DTO – Data Transfer Object) is a class used to receive data from the client (HTTP request).
+    1.Capture and validate incoming HTTP requests
+        Request objects are used to collect data sent by the client (like JSON).
+        They are also used with validation annotations.
+    2.Only contain necessary data
+        Request objects should include only required fields, not everything.
+        Keeps things clean and avoids unnecessary data.
+    3.Used only for sending data to server (not business logic)
+        Request objects are not entities.
+        They are not connected to database directly.
+            Request Object	                            Entity
+            Used for input	                            Used for DB
+            Lightweight	                                Contains full data
+            No business logic	                        Linked to business logic
+    4.Improves Security
+        Prevents exposing sensitive fields like: Password,Internal IDEs,roles
+    5.Flexible by decoupling entity models
+============================================================================================================
+Data Validation
+============================================================================================================
+What is Data Validation?
+    Data Validation is the process of checking whether the incoming data is:
+        correct
+        complete
+        in the right format before processing it in your application.
 
+     1. Ensuring data is accurate, complete, and compliant
+        We verify that: Required fields are not empty , Data format is correct (email, phone, etc.),
+        Values follow rules
+     2. Validate incoming requests against constraints
+        In Spring Boot, validation is applied to Request DTOs.
+        We define rules using annotations.
+     3. Maintains data integrity and prevents errors
+        Prevents invalid data entering DB, Avoids runtime issues, Ensures business logic works correctly
+        Common Validation Annotations
+        Annotation	            Purpose
+        @NotNull	            Cannot be null
+        @NotBlank	            Cannot be empty
+        @Size	                String length
+        @Email	                Valid email
+        @Min / @Max	            Range check
+    Data validation is the process of verifying incoming data against predefined rules to ensure
+                                                    accuracy, integrity, and correctness before procesing
+    Types of Data Validation :
+        1. Presence Validation
+            Ensures required fields are not null or empty
+            Used when: Field is mandatory
+        2. Range Validation
+            Ensures values fall within a specific range
+            Used for: Age, salary, marks, etc.
+        3. Format Validation
+            Ensures data follows a specific format
+            Used for: Email, Phone number, Password patterns
+============================================================================================================
+Swagger Clean Up
+============================================================================================================
+    It means making your Swagger UI more readable and meaningful by adding proper descriptions to:
+        APIs, Endpoints, Parameters [So developers can easily understand your API without confusion.]
+        1. @Tag
+            Used to group related APIs (endpoints)
+            Helps organize APIs in Swagger UI
+            Makes it easier to navigate
+        2. @Operation
+            Describes what a specific endpoint does
+            Explains purpose of API
+            Improves documentation clarity
+        3. @Parameter
+            Describes method parameters (inputs)
+            Helps understand required inputs
+            Clarifies usage
+
+            @Tag(name = "User APIs", description = "User management operations")
+            @RestController
+            @RequestMapping("/users")
+            public class UserController {
+                @Operation(summary = "Get user by ID")
+                @GetMapping("/{id}")
+                public String getUser(
+                    @Parameter(description = "User ID") @PathVariable int id) {
+                    return "User details";
+                }
+            }
+        @Tag → Group APIs
+        @Operation → Explain endpoint
+        @Parameter → Explain input
+    Swagger clean up uses annotations like @Tag, @Operation, and @Parameter to improve API documentation
+                                                       by clearly describing endpoints, groups, and inputs.

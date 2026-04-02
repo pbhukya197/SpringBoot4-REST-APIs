@@ -1,7 +1,15 @@
 package restapi.booking.books.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import restapi.booking.books.entity.Book;
+import restapi.booking.books.exception.BookNotFoundException;
+import restapi.booking.books.request.BookRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +21,7 @@ import java.util.List;
  * @RequestMapping is the main annotation used to map HTTP requests to controller methods
  * It maps URL + HTTP method to a specific handler method.
  */
+@Tag(name = "Books REST API Endpoints", description = "Operations Related to Books")
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
@@ -25,12 +34,14 @@ public class BookController {
 
     private void initalizeBooks() {
         books.addAll(List.of(
-                new Book("Title One", "Author One", "Science"),
-                new Book("Title Two", "Author Two", "social"),
-                new Book("Title three", "Author three", "Telugu"),
-                new Book("Title four", "Author four", "social"),
-                new Book("Title five", "Author five", "maths"),
-                new Book("Title six", "Author six", "English")
+                new Book(1,"CORE JAVA","Bert Bates","Computer Science & Engineering",4),
+                new Book(2,"Data Structures & Algorithms","Aditya Chatterjee","Computer Science & Engineering",4),
+                new Book(3,"Foundations of Mechanical","Sherwin","Mechanical Engineering",3),
+                new Book(4,"Communications","Jaya Reddy","Electrical Engineering",2),
+                new Book(5,"Emerging Fintech","Paul Taylor","Fintech",3),
+                new Book(6,"BlockChain Essentials","Abhilash","Computer Science & Engineering",5),
+                new Book(7,"Python Programming","Nageshwara","Computer Science & Engineering",1),
+                new Book(8,"The StartUp","Pramod Meher","Business Marketing",2)
         ));
     }
 
@@ -41,11 +52,17 @@ public class BookController {
      * It binds a value from query parameters (?key=value) to a method parameter.
      */
 
+    @Operation(summary = "Get all books", description = "Retrieve a list of all available books")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public List<Book> getBooks(@RequestParam(required = false) String category) {
+    public List<Book> getBooks(@Parameter(description = "Optional Query Parameter")
+                                   @RequestParam(required = false) String category) {
         if(category == null) {
             return books;
         }
+        return books.stream()
+                .filter(book -> book.getCategory().equalsIgnoreCase(category))
+                .toList();
         /*List<Book> filteredBooks = new ArrayList<>();
         for (Book book : books) {
             if(book.getCategory().equalsIgnoreCase(category)) {
@@ -53,9 +70,6 @@ public class BookController {
             }
         }
         return filteredBooks;*/
-        return books.stream()
-                .filter(book -> book.getCategory().equalsIgnoreCase(category))
-                .toList();
     }
 
     /**
@@ -65,20 +79,23 @@ public class BookController {
      * @PathVariable String title -> captures that value
      * Spring automatically maps it
      */
-    @GetMapping("/{title}")
-    public Book getBookByTitle(@PathVariable String title) {
+    @Operation(summary = "Get a book by ID", description = "Retrieve a specific book by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}")
+    public Book getBookById(@Parameter(description = "Id of book to be retrieved")
+                                    @PathVariable @Min(value = 1) long id) {
         return books.stream()
-                .filter(book -> book.getTitle().equalsIgnoreCase(title))
+                .filter(book -> book.getId() == id)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow( () -> new BookNotFoundException("Book with id " + id + " not found"));
     }
 
-    @GetMapping("/{title}/filter")
-    public List<Book> getBookByTitleAndCategory(@PathVariable String title,
+    @Operation(summary = "Get a book by ID/Category", description = "Retrieve a book by Id and Category")
+    @GetMapping("/{id}/filter")
+    public List<Book> getBookByIdAndCategory(@PathVariable long id,
                                                 @RequestParam(required = false) String category) {
         return books.stream()
-                .filter(book -> book.getTitle() != null &&
-                        book.getTitle().trim().equalsIgnoreCase(title.trim()))
+                .filter(book -> book.getId() == id)
                 .filter(book -> category == null || category.equalsIgnoreCase(book.getCategory()))
                 .toList();
     }
@@ -88,13 +105,18 @@ public class BookController {
      * It binds the HTTP request body (JSON) to a Java object.
      * Spring uses Jackson library internally with @RequestBody to map JSON to Java objects
      */
+    @Operation(summary = "Create a new book", description = "Add a new book to the list")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public void createBook(@RequestBody Book newBook) {
-        boolean isNewBook = books.stream()
+    public void createBook(@Valid @RequestBody BookRequest bookRequest) {
+        long id = books.isEmpty() ? 1 : books.get(books.size() - 1).getId()+1;
+        Book book = convertToBook(id,bookRequest);
+        books.add(book);
+        /*boolean isNewBook = books.stream()
                 .noneMatch(book -> book.getTitle().equalsIgnoreCase(newBook.getTitle()));
         if(isNewBook) {
             books.add(newBook);
-        }
+        }*/
         /*for(Book book : books) {
             if(book.getTitle().equalsIgnoreCase(newBook.getTitle())) {
                 return;
@@ -103,19 +125,42 @@ public class BookController {
         books.add(newBook);*/
     }
 
-    @PutMapping("/{title}")
-    public void updateBook(@PathVariable String title,@RequestBody Book updatedBook) {
+    @Operation(summary = "Update a book", description = "Update the details of existing book")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{id}")
+    public Book updateBook(@Parameter(description = "Id of the book Updated")
+                                @PathVariable @Min(value = 1) long id,
+                                @Valid @RequestBody BookRequest bookRequest) {
         for(int index = 0; index < books.size(); index++) {
-            if(books.get(index).getTitle().equalsIgnoreCase(title)) {
-                books.set(index, updatedBook);
-                return;
+            if(books.get(index).getId() == id) {
+                Book uptadeBook = convertToBook(index,bookRequest);
+                books.set(index, uptadeBook);
+                return uptadeBook;
             }
         }
+        throw new BookNotFoundException("Book with id " + id + " not found");
     }
 
-    @DeleteMapping("/{title}")
-    public void deleteBook(@PathVariable String title) {
-        books.removeIf(book -> book.getTitle().equalsIgnoreCase(title));
+    @Operation(summary = "Delete a book", description = "Delete a book from the list")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
+    public void deleteBook(@Parameter(description = "Id of book to be delete")
+                               @PathVariable @Min(value = 1) long id) {
+        books.stream()
+                .filter(book -> book.getId() == id)
+                .findFirst()
+                .orElseThrow( () -> new BookNotFoundException("Book with id " + id + " not found"));
+        books.removeIf(book -> book.getId() == id);
+    }
+
+    private Book convertToBook(long id, BookRequest bookRequest) {
+        return new Book(
+                id,
+                bookRequest.getTitle(),
+                bookRequest.getAuthor(),
+                bookRequest.getCategory(),
+                bookRequest.getRating()
+        );
     }
 
 }
