@@ -89,13 +89,13 @@ restapi.booking.books
 
 ## 📖 Swagger API Documentation
 
-Swagger UI is integrated for easy API testing and exploration.
+Swagger UI is integrated for easy API testing.
 
-👉 Access here:
-
-```
 http://localhost:8080/swagger-ui.html
-```
+
+### 📸 Preview
+
+![Swagger UI](upload/REST-API.png)
 
 ---
 
